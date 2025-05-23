@@ -31,7 +31,6 @@ jobs:
           port: 22
           script: |
             cd /root/production
-            pwd > pwd
             npm install
             npm update
             npm run migrate
