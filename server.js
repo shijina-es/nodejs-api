@@ -72,7 +72,7 @@ app.post('/api/register', async (req, res) => {
     let user_id= await generator.id_generator(process.env.USER_IDS, 6)// generating unique user id
     const hash = await bcrypt.hash(password, 10);
     await db.registerUser(username, hash, user_id, mail_id);
-    res.json({ success: true, message: 'User registered successfully' });
+    res.json({ success: true, message: 'User registered successfully!' });
   } catch (err) {
     logger.error(`Register error for the mailid: ${mail_id}, ${err.message}`);
     sendError(res, 500, errorMessages.registration_failed, err.message);
