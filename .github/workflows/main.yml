@@ -33,6 +33,6 @@ jobs:
             cd /root/production
             pwd > pwd
             npm install
-            #npm update
-            #npm run migrate
-            #pm2 restart node-api || pm2 start server.js --name "node-api"
+            npm update
+            npm run migrate
+            pm2 restart node-api || pm2 start server.js --name "node-api"
