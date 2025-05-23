@@ -33,5 +33,5 @@ jobs:
             cd /root/production
             npm install
             npm update
-            npm run migrate
+            npm run db:migrate apply
             pm2 restart node-api || pm2 start server.js --name "node-api"
