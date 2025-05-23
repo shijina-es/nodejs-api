@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "start": "nodemon server.js",
-    "migrate": "npx migrate up",
-    "migrate:rollback": "npx migrate down",
-    "migrate:create": "npx migrate create"
+    "db:migrate": "node ./utils/custom-migration-manager.js",
+    "db:migrate apply": "node ./utils/custom-migration-manager.js apply",
+    "db:migrate rollback": "node ./utils/custom-migration-manager.js rollback",
+    "db:migrate create": "node ./utils/custom-migration-manager.js create"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "db-migrate-mysql": "^3.0.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.0",

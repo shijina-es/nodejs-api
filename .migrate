@@ -1,9 +1,0 @@
-{
-  "lastRun": "0001-users-table.js",
-  "migrations": [
-    {
-      "title": "0001-users-table.js",
-      "timestamp": 1747918364027
-    }
-  ]
-}
