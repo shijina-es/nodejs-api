@@ -32,7 +32,7 @@ jobs:
           script: |
             cd /root/production
             pwd > pwd
-            npm install
+            /bin/npm install
             #npm update
             #npm run migrate
             #pm2 restart node-api || pm2 start server.js --name "node-api"
