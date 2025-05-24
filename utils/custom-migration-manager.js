@@ -5,6 +5,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
 import mysql from 'mysql2/promise';
+import chalk from 'chalk';
 
 const MIGRATIONS_DIR = process.env.MIGRATIONS_DIR;
 const TRACKING_TABLE = process.env.TRACKING_TABLE;
@@ -14,12 +15,22 @@ if (!MIGRATIONS_DIR || !TRACKING_TABLE) {
     process.exit(1);
 }
 const DB_CONFIG = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'test_db',
-  port: process.env.DB_PORT || 3306,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  multipleStatements: true,
+  connectionLimit: 10,
+  waitForConnections: true,
 };
+
+if (!DB_CONFIG.host || !DB_CONFIG.user || !DB_CONFIG.password || !DB_CONFIG.database || !DB_CONFIG.port) {
+  // Check if all required DB_CONFIG properties are set
+  console.error('Database configuration is incomplete. Please set DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, and DB_PORT environment variables.\n');
+  process.exit(1);
+}
+
 
 async function calculateHash(data) {
   return crypto.createHash('sha256').update(data).digest('hex');
@@ -40,6 +51,7 @@ async function getAppliedMigrations(connection) {
   const [rows] = await connection.execute(`SELECT name, hash, applied_at FROM ${TRACKING_TABLE}`);
   return new Map(rows.map(row => [row.name, { hash: row.hash, applied_at: row.applied_at }]));
 }
+
 
 async function applyMigrations(connection) {
   await ensureMigrationsTable(connection);
@@ -109,19 +121,36 @@ async function main() {
     await rollbackMigration(connection, version);
   } else if (cmd === 'create') {
     if (!version) {
-      console.error('Please specify a migration name.');
+      console.error(chalk.red('Please specify a migration name.\nUsage: npm run db:migrate create <name>'));
+      console.log(chalk.cyan('\nExample: npm run db:migrate create add_users_table'));
+      console.log(chalk.yellow('This will create two files: <timestamp>-<name>-up.sql and <timestamp>-<name>-down.sql in the migrations directory.'));
+      console.log(chalk.green('You can then edit these files to define your migration logic.\n'));
       process.exit(1);
     }
     await createMigration(version);
+  } else if (cmd === 'list') {
+    const appliedMigrations = await getAppliedMigrations(connection);
+
+    const tableData = Array.from(appliedMigrations.entries())
+      .sort(([, a], [, b]) => new Date(a.applied_at) - new Date(b.applied_at)) // Sort by date ascending
+      .map(([name, { hash, applied_at }]) => ({
+        Name: name,
+        Hash: hash,
+        'Applied At': applied_at,
+      }));
+
+    console.log('Applied migrations:');
+    console.table(tableData);
   }
   else {
-    console.log("\nUsage: npm run db:migrate [apply|rollback|create]");
+    console.error(chalk.red("\nUsage: npm run db:migrate [apply|rollback|create|list]"));
 
-    console.log(`
+    console.log(chalk.green(`
        npm run db:migrate apply               # Apply all pending migrations
        npm run db:migrate rollback            # Rollback last migration
        npm run db:migrate rollback <name>     # Rollback to specific version
-       npm run db:migrate create <name>       # Create new migration with <name>\n`);
+       npm run db:migrate list                # List all applied migrations
+       npm run db:migrate create <name>       # Create new migration with <name>\n`));
 
   }
 

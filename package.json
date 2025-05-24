@@ -8,7 +8,8 @@
     "db:migrate": "node ./utils/custom-migration-manager.js",
     "db:migrate apply": "node ./utils/custom-migration-manager.js apply",
     "db:migrate rollback": "node ./utils/custom-migration-manager.js rollback",
-    "db:migrate create": "node ./utils/custom-migration-manager.js create"
+    "db:migrate create": "node ./utils/custom-migration-manager.js create",
+    "db:migrate list": "node ./utils/custom-migration-manager.js list"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
